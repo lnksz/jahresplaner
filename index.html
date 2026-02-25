@@ -23,13 +23,6 @@
       --c-h:#ffd7e7;            /* HUrlaub */
       --c-g:#d7f0ff;            /* Gleittag */
 
-      --chart-label:rgba(255,255,255,.78);
-      --chart-label-strong:rgba(255,255,255,.9);
-      --chart-grid:rgba(255,255,255,.45);
-      --chart-grid-strong:rgba(255,255,255,.65);
-      --chart-border:rgba(255,255,255,.25);
-      --chart-letter:rgba(10,12,18,.92);
-
       color-scheme: dark;
     }
 
@@ -50,13 +43,6 @@
         --c-f:#d8d4ff;            /* FUrlaub */
         --c-h:#ffcfe3;            /* HUrlaub */
         --c-g:#cfe9ff;            /* Gleittag */
-
-        --chart-label:rgba(16,24,40,.78);
-        --chart-label-strong:rgba(16,24,40,.92);
-        --chart-grid:rgba(16,24,40,.20);
-        --chart-grid-strong:rgba(16,24,40,.32);
-        --chart-border:rgba(16,24,40,.15);
-        --chart-letter:rgba(10,14,22,.90);
 
         color-scheme: light;
       }
@@ -187,6 +173,7 @@
 
     @media (prefers-color-scheme: light){
       input[type="date"]{ background: rgba(16,24,40,.06); }
+      select{ background: rgba(16,24,40,.06) !important; }
     }
     button{
       background: rgba(255,255,255,.10);
@@ -409,6 +396,19 @@
 
     <div class="card">
       <div id="chart"></div>
+      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap">
+        <label style="font-size:12px">Von</label>
+        <input type="date" id="fgFrom" min="2026-01-01" max="2026-12-31" style="width:auto; flex:0 0 auto;" />
+        <label style="font-size:12px">Bis</label>
+        <input type="date" id="fgTo" min="2026-01-01" max="2026-12-31" style="width:auto; flex:0 0 auto;" />
+        <select id="fgType" style="background:rgba(255,255,255,.06); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:7px 10px; cursor:pointer;">
+          <option value="U">Urlaub (U)</option>
+          <option value="F">FUrlaub (F)</option>
+          <option value="H">HUrlaub (H)</option>
+          <option value="G">Gleittag (G)</option>
+        </select>
+        <button id="fgAdd">Hinzufügen</button>
+      </div>
     </div>
 
     <div class="card side">
@@ -687,7 +687,8 @@
     // -----------------------
     // Chart (ECharts)
     // -----------------------
-    const chart = echarts.init(document.getElementById("chart"));
+    const isDark = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let chart = echarts.init(document.getElementById("chart"), isDark() ? "dark" : null);
 
     const MONTHS_DE_SHORT = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
@@ -756,23 +757,17 @@
           firstDay: 1, // Monday
           splitLine: {
             show: true,
-            lineStyle: { color: getCssVar("--chart-grid-strong"), width: 1 }
-          },
-          itemStyle: {
-            borderWidth: 1,
-            borderColor: getCssVar("--chart-border")
+            lineStyle: { width: 1 }
           },
           dayLabel: {
             show: true,
             firstDay: 1,
             nameMap: ["So","Mo","Di","Mi","Do","Fr","Sa"],
-            color: getCssVar("--chart-label"),
             fontSize: 11,
             margin: 16
           },
           monthLabel: {
             nameMap: MONTHS_DE_SHORT,
-            color: getCssVar("--chart-label-strong"),
             fontSize: 12,
             fontWeight: 700,
             margin: 10
@@ -780,7 +775,6 @@
           yearLabel: {
             show: true,
             position: "top",
-            color: getCssVar("--chart-label-strong"),
             fontSize: 18,
             fontWeight: 900,
             margin: 40
@@ -789,12 +783,6 @@
         visualMap: {
           show: false,
           type: "piecewise",
-          orient: "horizontal",
-          left: 56,
-          top: 0,
-          itemWidth: 18,
-          itemHeight: 10,
-          textStyle: { color: getCssVar("--chart-label-strong") },
           pieces: [
             { value: CODE.U, label: "Urlaub", color: getCssVar("--c-u") },
             { value: CODE.F, label: "FUrlaub", color: getCssVar("--c-f") },
@@ -803,7 +791,7 @@
             { value: CODE.BG_HOLIDAY, label: "Feiertage", color: getCssVar("--c-feiertag") },
             { value: CODE.BG_SCHOOL, label: "Schulferien", color: getCssVar("--c-schulferien") },
             { value: CODE.BG_SHUTDOWN, label: "Betriebsruhetag", color: getCssVar("--c-betriebsruhe") },
-            { value: CODE.NONE, label: "leer", color: "rgba(255,255,255,.06)" }
+            { value: CODE.NONE, label: "leer", color: isDark() ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.04)" }
           ]
         },
         series: [
@@ -811,28 +799,23 @@
             name: "Tage",
             type: "heatmap",
             coordinateSystem: "calendar",
-            data: buildHeatmapData(),
-            itemStyle: {
-              borderWidth: 1,
-              borderColor: getCssVar("--chart-grid"),
-              borderType: "solid"
-            }
+            data: buildHeatmapData()
           },
           {
             name: "LetterOverlay",
             type: "scatter",
             coordinateSystem: "calendar",
             data: buildLetterScatterData(),
-            symbolSize: 1, // tiny marker; label carries the meaning
+            symbolSize: 1,
             label: {
               show: true,
               formatter: (p) => p.data.letter || "",
-              color: getCssVar("--chart-letter"),
+              color: isDark() ? "rgba(10,12,18,.92)" : "rgba(10,14,22,.90)",
               fontWeight: 900,
               fontSize: 12
             },
             itemStyle: {
-              color: "rgba(0,0,0,0)" // marker invisible
+              color: "rgba(0,0,0,0)"
             },
             z: 10
           }
@@ -857,6 +840,17 @@
 
     window.addEventListener("resize", () => chart.resize());
 
+    // Re-init chart when color scheme changes
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      chart.dispose();
+      chart = echarts.init(document.getElementById("chart"), isDark() ? "dark" : null);
+      chart.on("click", (params) => {
+        const iso = Array.isArray(params.value) ? params.value[0] : params.value;
+        if (typeof iso === "string" && in2026(iso)) openModal(iso);
+      });
+      refresh();
+    });
+
     // -----------------------
     // Boot
     // -----------------------
@@ -868,6 +862,34 @@
         saveState();
         refresh();
       }
+    });
+
+    // Foreground range input
+    const fgFromEl = document.getElementById("fgFrom");
+    const fgToEl = document.getElementById("fgTo");
+    const fgTypeEl = document.getElementById("fgType");
+    const fgAddBtn = document.getElementById("fgAdd");
+
+    fgFromEl.addEventListener("change", () => {
+      if (fgFromEl.value && !fgToEl.value) {
+        fgToEl.value = fgFromEl.value;
+      }
+    });
+
+    fgAddBtn.addEventListener("click", () => {
+      const from = fgFromEl.value;
+      const to = fgToEl.value || from;
+      const type = fgTypeEl.value;
+      if (!from || !in2026(from)) return;
+
+      const dates = datesInRange(from, to);
+      for (const iso of dates) {
+        state.fg[iso] = type;
+      }
+      fgFromEl.value = "";
+      fgToEl.value = "";
+      saveState();
+      refresh();
     });
 
     refresh();
