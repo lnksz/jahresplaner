@@ -66,24 +66,32 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-      background: radial-gradient(1200px 600px at 20% 0%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
+      background: radial-gradient(ellipse at 20% 0%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
       color:var(--text);
     }
 
     @media (prefers-color-scheme: light){
       body{
-        background: radial-gradient(1200px 600px at 20% 0%, #e9efff 0%, var(--bg) 55%, #e6ebf5 100%);
+        background: radial-gradient(ellipse at 20% 0%, #e9efff 0%, var(--bg) 55%, #e6ebf5 100%);
+        background-attachment: fixed;
       }
     }
 
     .wrap{
-      max-width: 1600px;
-      margin: 22px auto;
-      padding: 0 16px 24px;
+      max-width: none;
+      margin: 22px 24px;
+      padding: 0 0 24px;
       display:grid;
-      grid-template-columns: 1fr 240px;
+      grid-template-columns: 520px 1fr 240px;
+      grid-template-rows: auto 1fr;
       gap: 16px;
       align-items:start;
+    }
+
+    .header{
+      grid-column: 1 / -1;
     }
 
     .card{
@@ -110,13 +118,12 @@
 
     .top{
       display:flex;
+      flex-direction: column;
       gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
     }
 
     .picker{
-      flex: 1 1 260px;
+      flex: none;
       background: rgba(0,0,0,.18);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -158,7 +165,24 @@
       border-radius: 10px;
       padding: 7px 10px;
       min-width: 0;
-      flex: 1 1 auto;
+      flex: 0 0 auto;
+      width: 36px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    input[type="date"]::-webkit-datetime-edit{
+      display: none;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator{
+      margin: 0;
+      padding: 0;
+      cursor: pointer;
+      filter: invert(.8);
+    }
+    @media (prefers-color-scheme: light){
+      input[type="date"]::-webkit-calendar-picker-indicator{
+        filter: none;
+      }
     }
 
     @media (prefers-color-scheme: light){
@@ -210,7 +234,7 @@
     }
 
     #chart{
-      height: 700px;
+      height: 320px;
       width: 100%;
     }
 
@@ -330,25 +354,25 @@
 
     @media (max-width: 980px){
       .wrap{ grid-template-columns: 1fr; }
-      #chart{ height: 680px; }
+      .header{ grid-column: 1; }
+      #chart{ height: 400px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>2026 Kalender – Auswahl pro Tag (U/F/H/G oder leer)</h1>
+    <h1 class="header">2026 Kalender – Auswahl pro Tag (U/F/H/G oder leer)</h1>
 
+    <div class="card side-left">
+      <h2 style="margin:0 0 10px; font-size:14px; font-weight:800">Hintergrund-Tage</h2>
       <div class="top">
         <div class="picker" data-bg="holiday">
-          <h2><span class="swatch" style="background:var(--c-feiertag)"></span>Feiertage (Hintergrund, nicht gezählt)</h2>
+          <h2><span class="swatch" style="background:var(--c-feiertag)"></span>Feiertage</h2>
           <div class="row">
             <label style="font-size:12px">Von</label>
             <input type="date" class="date-from" min="2026-01-01" max="2026-12-31" />
             <label style="font-size:12px">Bis</label>
             <input type="date" class="date-to" min="2026-01-01" max="2026-12-31" />
-          </div>
-          <div class="row" style="margin-top:6px">
             <button class="add">Hinzufügen</button>
             <button class="clear">Leeren</button>
           </div>
@@ -356,14 +380,12 @@
         </div>
 
         <div class="picker" data-bg="school">
-          <h2><span class="swatch" style="background:var(--c-schulferien)"></span>Schulferien (Hintergrund, nicht gezählt)</h2>
+          <h2><span class="swatch" style="background:var(--c-schulferien)"></span>Schulferien</h2>
           <div class="row">
             <label style="font-size:12px">Von</label>
             <input type="date" class="date-from" min="2026-01-01" max="2026-12-31" />
             <label style="font-size:12px">Bis</label>
             <input type="date" class="date-to" min="2026-01-01" max="2026-12-31" />
-          </div>
-          <div class="row" style="margin-top:6px">
             <button class="add">Hinzufügen</button>
             <button class="clear">Leeren</button>
           </div>
@@ -371,21 +393,21 @@
         </div>
 
         <div class="picker" data-bg="shutdown">
-          <h2><span class="swatch" style="background:var(--c-betriebsruhe)"></span>Betriebsruhetag (Hintergrund, nicht gezählt)</h2>
+          <h2><span class="swatch" style="background:var(--c-betriebsruhe)"></span>Betriebsruhetag</h2>
           <div class="row">
             <label style="font-size:12px">Von</label>
             <input type="date" class="date-from" min="2026-01-01" max="2026-12-31" />
             <label style="font-size:12px">Bis</label>
             <input type="date" class="date-to" min="2026-01-01" max="2026-12-31" />
-          </div>
-          <div class="row" style="margin-top:6px">
             <button class="add">Hinzufügen</button>
             <button class="clear">Leeren</button>
           </div>
           <div class="chips"></div>
         </div>
       </div>
+    </div>
 
+    <div class="card">
       <div id="chart"></div>
     </div>
 
@@ -757,9 +779,11 @@
           },
           yearLabel: {
             show: true,
+            position: "top",
             color: getCssVar("--chart-label-strong"),
             fontSize: 18,
-            fontWeight: 900
+            fontWeight: 900,
+            margin: 40
           }
         },
         visualMap: {
