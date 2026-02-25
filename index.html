@@ -22,6 +22,44 @@
       --c-f:#e0dcff;            /* FUrlaub */
       --c-h:#ffd7e7;            /* HUrlaub */
       --c-g:#d7f0ff;            /* Gleittag */
+
+      --chart-label:rgba(255,255,255,.78);
+      --chart-label-strong:rgba(255,255,255,.9);
+      --chart-grid:rgba(255,255,255,.45);
+      --chart-grid-strong:rgba(255,255,255,.65);
+      --chart-border:rgba(255,255,255,.25);
+      --chart-letter:rgba(10,12,18,.92);
+
+      color-scheme: dark;
+    }
+
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f4f6fb;
+        --panel:#ffffff;
+        --panel2:#f7f9ff;
+        --text:#1c2430;
+        --muted:#5b6675;
+        --border:rgba(16,24,40,.12);
+
+        --c-feiertag:#cfe7ff;     /* light blue */
+        --c-schulferien:#fff1b8;  /* light yellow */
+        --c-betriebsruhe:#ffd9b3; /* light orange */
+
+        --c-u:#c8f0d5;            /* Urlaub */
+        --c-f:#d8d4ff;            /* FUrlaub */
+        --c-h:#ffcfe3;            /* HUrlaub */
+        --c-g:#cfe9ff;            /* Gleittag */
+
+        --chart-label:rgba(16,24,40,.78);
+        --chart-label-strong:rgba(16,24,40,.92);
+        --chart-grid:rgba(16,24,40,.20);
+        --chart-grid-strong:rgba(16,24,40,.32);
+        --chart-border:rgba(16,24,40,.15);
+        --chart-letter:rgba(10,14,22,.90);
+
+        color-scheme: light;
+      }
     }
 
     *{box-sizing:border-box}
@@ -30,6 +68,12 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
       background: radial-gradient(1200px 600px at 20% 0%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
       color:var(--text);
+    }
+
+    @media (prefers-color-scheme: light){
+      body{
+        background: radial-gradient(1200px 600px at 20% 0%, #e9efff 0%, var(--bg) 55%, #e6ebf5 100%);
+      }
     }
 
     .wrap{
@@ -48,6 +92,13 @@
       border-radius: 16px;
       padding: 14px;
       box-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+
+    @media (prefers-color-scheme: light){
+      .card{
+        background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
+        box-shadow: 0 12px 40px rgba(22,34,66,.12);
+      }
     }
 
     h1{
@@ -70,6 +121,10 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 10px;
+    }
+
+    @media (prefers-color-scheme: light){
+      .picker{ background: rgba(255,255,255,.7); }
     }
 
     .picker h2{
@@ -103,6 +158,10 @@
       border-radius: 10px;
       padding: 7px 10px;
     }
+
+    @media (prefers-color-scheme: light){
+      input[type="date"]{ background: rgba(16,24,40,.06); }
+    }
     button{
       background: rgba(255,255,255,.10);
       color: var(--text);
@@ -113,6 +172,11 @@
       transition: transform .04s ease, background .15s ease;
     }
     button:hover{ background: rgba(255,255,255,.16); }
+
+    @media (prefers-color-scheme: light){
+      button{ background: rgba(16,24,40,.06); }
+      button:hover{ background: rgba(16,24,40,.10); }
+    }
     button:active{ transform: translateY(1px); }
 
     .chips{
@@ -131,6 +195,10 @@
       border: 1px solid var(--border);
       background: rgba(0,0,0,.18);
       user-select:none;
+    }
+
+    @media (prefers-color-scheme: light){
+      .chip{ background: rgba(16,24,40,.06); }
     }
     .chip .x{
       opacity:.85;
@@ -163,6 +231,10 @@
       justify-content:space-between;
       font-size: 13px;
     }
+
+    @media (prefers-color-scheme: light){
+      .count{ background: rgba(16,24,40,.04); }
+    }
     .count .left{
       display:flex;
       align-items:center;
@@ -177,6 +249,10 @@
       border: 1px solid rgba(0,0,0,.15);
       color:#0b0f14;
       background: rgba(255,255,255,.7);
+    }
+
+    @media (prefers-color-scheme: light){
+      .pill{ background: rgba(16,24,40,.08); color:#0f172a; }
     }
 
     .hint{
@@ -197,6 +273,10 @@
       padding: 16px;
       z-index: 50;
     }
+
+    @media (prefers-color-scheme: light){
+      .modal-backdrop{ background: rgba(10,15,25,.25); }
+    }
     .modal{
       width: min(520px, 100%);
       border-radius: 16px;
@@ -204,6 +284,13 @@
       background: linear-gradient(180deg, rgba(24,32,52,.98), rgba(13,17,27,.98));
       box-shadow: 0 20px 80px rgba(0,0,0,.55);
       padding: 14px;
+    }
+
+    @media (prefers-color-scheme: light){
+      .modal{
+        background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,255,.98));
+        box-shadow: 0 20px 80px rgba(22,34,66,.20);
+      }
     }
     .modal h3{
       margin:0 0 6px;
@@ -225,6 +312,10 @@
       padding: 10px;
       border-radius: 14px;
       background: rgba(255,255,255,.08);
+    }
+
+    @media (prefers-color-scheme: light){
+      .optbtn{ background: rgba(16,24,40,.06); }
     }
     .optbtn strong{ display:block; font-size: 13px; }
     .optbtn span{ color: var(--muted); font-size: 12px; }
@@ -294,6 +385,11 @@
         Hintergrund-Kategorien sind unabhängig und werden nicht gezählt; eine Vordergrund-Auswahl überdeckt die Hintergrundfarbe.
         <br><br>
         Speicherung: automatisch in <code>localStorage</code>.
+      </div>
+      <div style="margin-top:20px; text-align:right;">
+        <button id="resetFg" style="color:#ff8888; border-color:rgba(255,100,100,.35)">
+          Alle „Gezählten“ löschen
+        </button>
       </div>
     </div>
   </div>
@@ -596,42 +692,43 @@
           firstDay: 1, // Monday
           splitLine: {
             show: true,
-            lineStyle: { color: "rgba(255,255,255,.10)", width: 1 }
+            lineStyle: { color: getCssVar("--chart-grid-strong"), width: 1 }
           },
           itemStyle: {
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,.07)"
+            borderColor: getCssVar("--chart-border")
           },
           dayLabel: {
             show: true,
             firstDay: 1,
             nameMap: ["So","Mo","Di","Mi","Do","Fr","Sa"],
-            color: "rgba(255,255,255,.78)",
+            color: getCssVar("--chart-label"),
             fontSize: 11,
             margin: 16
           },
           monthLabel: {
             nameMap: MONTHS_DE_SHORT,
-            color: "rgba(255,255,255,.85)",
+            color: getCssVar("--chart-label-strong"),
             fontSize: 12,
             fontWeight: 700,
             margin: 10
           },
           yearLabel: {
             show: true,
-            color: "rgba(255,255,255,.9)",
+            color: getCssVar("--chart-label-strong"),
             fontSize: 18,
             fontWeight: 900
           }
         },
         visualMap: {
+          show: false,
           type: "piecewise",
           orient: "horizontal",
           left: 56,
           top: 0,
           itemWidth: 18,
           itemHeight: 10,
-          textStyle: { color: "rgba(255,255,255,.85)" },
+          textStyle: { color: getCssVar("--chart-label-strong") },
           pieces: [
             { value: CODE.U, label: "Urlaub", color: getCssVar("--c-u") },
             { value: CODE.F, label: "FUrlaub", color: getCssVar("--c-f") },
@@ -640,7 +737,7 @@
             { value: CODE.BG_HOLIDAY, label: "Feiertage", color: getCssVar("--c-feiertag") },
             { value: CODE.BG_SCHOOL, label: "Schulferien", color: getCssVar("--c-schulferien") },
             { value: CODE.BG_SHUTDOWN, label: "Betriebsruhetag", color: getCssVar("--c-betriebsruhe") },
-            { value: CODE.NONE, label: "leer", color: "rgba(255,255,255,.04)" }
+            { value: CODE.NONE, label: "leer", color: "rgba(255,255,255,.06)" }
           ]
         },
         series: [
@@ -648,7 +745,12 @@
             name: "Tage",
             type: "heatmap",
             coordinateSystem: "calendar",
-            data: buildHeatmapData()
+            data: buildHeatmapData(),
+            itemStyle: {
+              borderWidth: 1,
+              borderColor: getCssVar("--chart-grid"),
+              borderType: "solid"
+            }
           },
           {
             name: "LetterOverlay",
@@ -659,7 +761,7 @@
             label: {
               show: true,
               formatter: (p) => p.data.letter || "",
-              color: "rgba(10,12,18,.92)",
+              color: getCssVar("--chart-letter"),
               fontWeight: 900,
               fontSize: 12
             },
@@ -693,6 +795,15 @@
     // Boot
     // -----------------------
     bindPickers();
+
+    document.getElementById("resetFg").addEventListener("click", () => {
+      if (confirm("Wirklich alle gezählten Tage (U/F/H/G) löschen?")){
+        state.fg = {};
+        saveState();
+        refresh();
+      }
+    });
+
     refresh();
   </script>
 </body>
