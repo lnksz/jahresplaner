@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>2026 Kalender – ECharts Heatmap</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#121826;
+      --panel2:#0f1522;
+      --text:#e8eef7;
+      --muted:#a9b4c3;
+      --border:rgba(255,255,255,.12);
+
+      /* light background colors */
+      --c-feiertag:#cfeaff;     /* light blue */
+      --c-schulferien:#fff5c9;  /* light yellow */
+      --c-betriebsruhe:#ffe0bf; /* light orange */
+
+      --c-u:#d7f6de;            /* Urlaub */
+      --c-f:#e0dcff;            /* FUrlaub */
+      --c-h:#ffd7e7;            /* HUrlaub */
+      --c-g:#d7f0ff;            /* Gleittag */
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width: 1200px;
+      margin: 22px auto;
+      padding: 0 16px 24px;
+      display:grid;
+      grid-template-columns: 1fr 280px;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .top{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .picker{
+      flex: 1 1 260px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .picker h2{
+      margin:0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .swatch{
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.2);
+      display:inline-block;
+    }
+
+    .row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    input[type="date"]{
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+    }
+    button{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      cursor:pointer;
+      transition: transform .04s ease, background .15s ease;
+    }
+    button:hover{ background: rgba(255,255,255,.16); }
+    button:active{ transform: translateY(1px); }
+
+    .chips{
+      margin-top: 8px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      user-select:none;
+    }
+    .chip .x{
+      opacity:.85;
+      font-weight:900;
+      cursor:pointer;
+      padding:0 2px;
+    }
+
+    #chart{
+      height: 620px;
+      width: 100%;
+    }
+
+    .side h2{
+      margin:0 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .counts{
+      display:grid;
+      gap: 10px;
+    }
+    .count{
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
+      padding: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size: 13px;
+    }
+    .count .left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .pill{
+      min-width: 28px;
+      text-align:center;
+      font-weight: 900;
+      border-radius: 10px;
+      padding: 2px 8px;
+      border: 1px solid rgba(0,0,0,.15);
+      color:#0b0f14;
+      background: rgba(255,255,255,.7);
+    }
+
+    .hint{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal{
+      width: min(520px, 100%);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(24,32,52,.98), rgba(13,17,27,.98));
+      box-shadow: 0 20px 80px rgba(0,0,0,.55);
+      padding: 14px;
+    }
+    .modal h3{
+      margin:0 0 6px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .modal p{
+      margin:0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .modal .opts{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .optbtn{
+      text-align:left;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+    }
+    .optbtn strong{ display:block; font-size: 13px; }
+    .optbtn span{ color: var(--muted); font-size: 12px; }
+    .modal .foot{
+      display:flex;
+      justify-content:flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      #chart{ height: 680px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>2026 Kalender – Auswahl pro Tag (U/F/H/G oder leer)</h1>
+
+      <div class="top">
+        <div class="picker" data-bg="holiday">
+          <h2><span class="swatch" style="background:var(--c-feiertag)"></span>Feiertage (Hintergrund, nicht gezählt)</h2>
+          <div class="row">
+            <input type="date" class="date" min="2026-01-01" max="2026-12-31" />
+            <button class="add">Hinzufügen</button>
+            <button class="clear">Leeren</button>
+          </div>
+          <div class="chips"></div>
+        </div>
+
+        <div class="picker" data-bg="school">
+          <h2><span class="swatch" style="background:var(--c-schulferien)"></span>Schulferien (Hintergrund, nicht gezählt)</h2>
+          <div class="row">
+            <input type="date" class="date" min="2026-01-01" max="2026-12-31" />
+            <button class="add">Hinzufügen</button>
+            <button class="clear">Leeren</button>
+          </div>
+          <div class="chips"></div>
+        </div>
+
+        <div class="picker" data-bg="shutdown">
+          <h2><span class="swatch" style="background:var(--c-betriebsruhe)"></span>Betriebsruhetag (Hintergrund, nicht gezählt)</h2>
+          <div class="row">
+            <input type="date" class="date" min="2026-01-01" max="2026-12-31" />
+            <button class="add">Hinzufügen</button>
+            <button class="clear">Leeren</button>
+          </div>
+          <div class="chips"></div>
+        </div>
+      </div>
+
+      <div id="chart"></div>
+    </div>
+
+    <div class="card side">
+      <h2>Gezählte Tage</h2>
+      <div class="counts">
+        <div class="count"><div class="left"><span class="swatch" style="background:var(--c-u)"></span>Urlaub (U)</div><div class="pill" id="cnt-U">0</div></div>
+        <div class="count"><div class="left"><span class="swatch" style="background:var(--c-f)"></span>FUrlaub (F)</div><div class="pill" id="cnt-F">0</div></div>
+        <div class="count"><div class="left"><span class="swatch" style="background:var(--c-h)"></span>HUrlaub (H)</div><div class="pill" id="cnt-H">0</div></div>
+        <div class="count"><div class="left"><span class="swatch" style="background:var(--c-g)"></span>Gleittag (G)</div><div class="pill" id="cnt-G">0</div></div>
+      </div>
+      <div class="hint">
+        Klick auf einen Tag öffnet die Auswahl. Pro Tag ist genau <b>eine</b> Kategorie möglich (oder „Nix“).
+        Hintergrund-Kategorien sind unabhängig und werden nicht gezählt; eine Vordergrund-Auswahl überdeckt die Hintergrundfarbe.
+        <br><br>
+        Speicherung: automatisch in <code>localStorage</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 id="modalTitle">Tag wählen</h3>
+      <p>Wähle genau eine Option für diesen Tag:</p>
+      <div class="opts" id="modalOpts"></div>
+      <div class="foot">
+        <button id="modalCancel">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script>
+    // -----------------------
+    // Helpers
+    // -----------------------
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    const in2026 = (iso) => iso >= "2026-01-01" && iso <= "2026-12-31";
+
+    function allDates2026(){
+      const out = [];
+      const start = new Date(2026, 0, 1);
+      const end = new Date(2026, 11, 31);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+        out.push(toISO(d));
+      }
+      return out;
+    }
+
+    // -----------------------
+    // State (persisted)
+    // -----------------------
+    const LS_KEY = "echarts-calendar-2026-state-v1";
+
+    const DEFAULT_STATE = {
+      // foreground exclusive selection per date: "U"|"F"|"H"|"G"|null
+      fg: {},
+
+      // background sets: each is array of ISO dates
+      bg: {
+        holiday: [],
+        school: [],
+        shutdown: []
+      }
+    };
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return structuredClone(DEFAULT_STATE);
+        const parsed = JSON.parse(raw);
+        // basic shape hardening
+        return {
+          fg: parsed.fg && typeof parsed.fg === "object" ? parsed.fg : {},
+          bg: {
+            holiday: Array.isArray(parsed.bg?.holiday) ? parsed.bg.holiday : [],
+            school: Array.isArray(parsed.bg?.school) ? parsed.bg.school : [],
+            shutdown: Array.isArray(parsed.bg?.shutdown) ? parsed.bg.shutdown : []
+          }
+        };
+      }catch{
+        return structuredClone(DEFAULT_STATE);
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    }
+
+    const state = loadState();
+
+    // -----------------------
+    // Category codes (for coloring)
+    // Precedence: foreground overrides background
+    // Background precedence: shutdown > holiday > school (configurable here)
+    // -----------------------
+    const CODE = {
+      NONE: 0,
+
+      U: 1,
+      F: 2,
+      H: 3,
+      G: 4,
+
+      BG_SCHOOL: 10,
+      BG_HOLIDAY: 11,
+      BG_SHUTDOWN: 12
+    };
+
+    const BG_PRECEDENCE = ["shutdown", "holiday", "school"]; // highest first
+
+    function effectiveCodeForDate(iso){
+      const fg = state.fg[iso] ?? null;
+      if (fg === "U") return CODE.U;
+      if (fg === "F") return CODE.F;
+      if (fg === "H") return CODE.H;
+      if (fg === "G") return CODE.G;
+
+      // background
+      for (const k of BG_PRECEDENCE){
+        if (state.bg[k].includes(iso)){
+          if (k === "shutdown") return CODE.BG_SHUTDOWN;
+          if (k === "holiday") return CODE.BG_HOLIDAY;
+          if (k === "school") return CODE.BG_SCHOOL;
+        }
+      }
+      return CODE.NONE;
+    }
+
+    // -----------------------
+    // UI: Background pickers (multi dates via add + chips)
+    // -----------------------
+    function uniqSorted(arr){
+      return Array.from(new Set(arr)).filter(in2026).sort();
+    }
+
+    function renderPicker(pickerEl){
+      const key = pickerEl.getAttribute("data-bg");
+      const chips = pickerEl.querySelector(".chips");
+      chips.innerHTML = "";
+
+      state.bg[key] = uniqSorted(state.bg[key]);
+
+      for (const iso of state.bg[key]){
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.innerHTML = `<span>${iso}</span><span class="x" title="Entfernen">×</span>`;
+        chip.querySelector(".x").addEventListener("click", () => {
+          state.bg[key] = state.bg[key].filter(d => d !== iso);
+          saveState();
+          renderPicker(pickerEl);
+          refresh();
+        });
+        chips.appendChild(chip);
+      }
+    }
+
+    function bindPickers(){
+      document.querySelectorAll(".picker").forEach(pickerEl => {
+        const key = pickerEl.getAttribute("data-bg");
+        const input = pickerEl.querySelector("input.date");
+        const addBtn = pickerEl.querySelector("button.add");
+        const clearBtn = pickerEl.querySelector("button.clear");
+
+        addBtn.addEventListener("click", () => {
+          const v = input.value;
+          if (!v || !in2026(v)) return;
+          state.bg[key].push(v);
+          state.bg[key] = uniqSorted(state.bg[key]);
+          input.value = "";
+          saveState();
+          renderPicker(pickerEl);
+          refresh();
+        });
+
+        clearBtn.addEventListener("click", () => {
+          state.bg[key] = [];
+          saveState();
+          renderPicker(pickerEl);
+          refresh();
+        });
+
+        renderPicker(pickerEl);
+      });
+    }
+
+    // -----------------------
+    // Modal for exclusive foreground selection
+    // -----------------------
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalOpts = document.getElementById("modalOpts");
+    const modalCancel = document.getElementById("modalCancel");
+
+    let modalDate = null;
+
+    const FG_OPTIONS = [
+      { key: null, label: "Nix", sub: "leer / entfernen", letter: "" },
+      { key: "U", label: "Urlaub", sub: "(U)", letter: "U" },
+      { key: "F", label: "FUrlaub", sub: "(F)", letter: "F" },
+      { key: "H", label: "HUrlaub", sub: "(H)", letter: "H" },
+      { key: "G", label: "Gleittag", sub: "(G)", letter: "G" }
+    ];
+
+    function openModal(iso){
+      modalDate = iso;
+      modalTitle.textContent = `Auswahl für ${iso}`;
+      modalOpts.innerHTML = "";
+
+      const current = state.fg[iso] ?? null;
+
+      for (const opt of FG_OPTIONS){
+        const btn = document.createElement("button");
+        btn.className = "optbtn";
+        const active = (opt.key === current) || (opt.key === null && current === null);
+        btn.style.outline = active ? "2px solid rgba(255,255,255,.35)" : "none";
+        btn.innerHTML = `<strong>${opt.label}</strong><span>${opt.sub}</span>`;
+        btn.addEventListener("click", () => {
+          if (opt.key === null) delete state.fg[iso];
+          else state.fg[iso] = opt.key;
+
+          saveState();
+          closeModal();
+          refresh();
+        });
+        modalOpts.appendChild(btn);
+      }
+
+      modalBackdrop.style.display = "flex";
+    }
+
+    function closeModal(){
+      modalBackdrop.style.display = "none";
+      modalDate = null;
+    }
+
+    modalCancel.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalBackdrop.style.display === "flex") closeModal();
+    });
+
+    // -----------------------
+    // Chart (ECharts)
+    // -----------------------
+    const chart = echarts.init(document.getElementById("chart"));
+
+    const MONTHS_DE_SHORT = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+
+    function buildHeatmapData(){
+      const dates = allDates2026();
+      return dates.map(iso => [iso, effectiveCodeForDate(iso)]);
+    }
+
+    function buildLetterScatterData(){
+      // only foreground selections get letters
+      const out = [];
+      for (const [iso, v] of Object.entries(state.fg)){
+        if (!in2026(iso)) continue;
+        if (v === "U" || v === "F" || v === "H" || v === "G"){
+          out.push({ value: iso, letter: v });
+        }
+      }
+      return out;
+    }
+
+    function updateCounts(){
+      const counts = { U:0, F:0, H:0, G:0 };
+      for (const iso of Object.keys(state.fg)){
+        const v = state.fg[iso];
+        if (counts[v] !== undefined) counts[v]++;
+      }
+      document.getElementById("cnt-U").textContent = counts.U;
+      document.getElementById("cnt-F").textContent = counts.F;
+      document.getElementById("cnt-H").textContent = counts.H;
+      document.getElementById("cnt-G").textContent = counts.G;
+    }
+
+    function option(){
+      return {
+        backgroundColor: "transparent",
+        tooltip: {
+          position: "top",
+          formatter: (p) => {
+            const iso = Array.isArray(p.value) ? p.value[0] : p.value;
+            const fg = state.fg[iso] ?? null;
+            const bg = [];
+            if (state.bg.holiday.includes(iso)) bg.push("Feiertag");
+            if (state.bg.school.includes(iso)) bg.push("Schulferien");
+            if (state.bg.shutdown.includes(iso)) bg.push("Betriebsruhetag");
+
+            let fgTxt = "—";
+            if (fg === "U") fgTxt = "Urlaub (U)";
+            if (fg === "F") fgTxt = "FUrlaub (F)";
+            if (fg === "H") fgTxt = "HUrlaub (H)";
+            if (fg === "G") fgTxt = "Gleittag (G)";
+
+            return [
+              `<b>${iso}</b>`,
+              `Vordergrund: ${fgTxt}`,
+              `Hintergrund: ${bg.length ? bg.join(", ") : "—"}`,
+              `<span style="opacity:.8">(Klick zum Ändern)</span>`
+            ].join("<br/>");
+          }
+        },
+        calendar: {
+          top: 30,
+          left: 20,
+          right: 20,
+          cellSize: ["auto", 20],
+          range: "2026",
+          firstDay: 1, // Monday
+          splitLine: {
+            show: true,
+            lineStyle: { color: "rgba(255,255,255,.10)", width: 1 }
+          },
+          itemStyle: {
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,.07)"
+          },
+          dayLabel: {
+            show: true,
+            firstDay: 1,
+            nameMap: ["So","Mo","Di","Mi","Do","Fr","Sa"],
+            color: "rgba(255,255,255,.78)",
+            fontSize: 11,
+            margin: 8
+          },
+          monthLabel: {
+            nameMap: MONTHS_DE_SHORT,
+            color: "rgba(255,255,255,.85)",
+            fontSize: 12,
+            fontWeight: 700,
+            margin: 10
+          },
+          yearLabel: {
+            show: true,
+            color: "rgba(255,255,255,.9)",
+            fontSize: 18,
+            fontWeight: 900
+          }
+        },
+        visualMap: {
+          type: "piecewise",
+          orient: "horizontal",
+          left: 20,
+          top: 0,
+          itemWidth: 18,
+          itemHeight: 10,
+          textStyle: { color: "rgba(255,255,255,.85)" },
+          pieces: [
+            { value: CODE.U, label: "Urlaub", color: getCssVar("--c-u") },
+            { value: CODE.F, label: "FUrlaub", color: getCssVar("--c-f") },
+            { value: CODE.H, label: "HUrlaub", color: getCssVar("--c-h") },
+            { value: CODE.G, label: "Gleittag", color: getCssVar("--c-g") },
+            { value: CODE.BG_HOLIDAY, label: "Feiertage", color: getCssVar("--c-feiertag") },
+            { value: CODE.BG_SCHOOL, label: "Schulferien", color: getCssVar("--c-schulferien") },
+            { value: CODE.BG_SHUTDOWN, label: "Betriebsruhetag", color: getCssVar("--c-betriebsruhe") },
+            { value: CODE.NONE, label: "leer", color: "rgba(255,255,255,.04)" }
+          ]
+        },
+        series: [
+          {
+            name: "Tage",
+            type: "heatmap",
+            coordinateSystem: "calendar",
+            data: buildHeatmapData()
+          },
+          {
+            name: "LetterOverlay",
+            type: "scatter",
+            coordinateSystem: "calendar",
+            data: buildLetterScatterData(),
+            symbolSize: 1, // tiny marker; label carries the meaning
+            label: {
+              show: true,
+              formatter: (p) => p.data.letter || "",
+              color: "rgba(10,12,18,.92)",
+              fontWeight: 900,
+              fontSize: 12
+            },
+            itemStyle: {
+              color: "rgba(0,0,0,0)" // marker invisible
+            },
+            z: 10
+          }
+        ]
+      };
+    }
+
+    function getCssVar(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function refresh(){
+      updateCounts();
+      chart.setOption(option(), true);
+    }
+
+    // Click on day: open modal for fg selection
+    chart.on("click", (params) => {
+      const iso = Array.isArray(params.value) ? params.value[0] : params.value;
+      if (typeof iso === "string" && in2026(iso)) openModal(iso);
+    });
+
+    window.addEventListener("resize", () => chart.resize());
+
+    // -----------------------
+    // Boot
+    // -----------------------
+    bindPickers();
+    refresh();
+  </script>
+</body>
+</html>
