@@ -33,11 +33,11 @@
     }
 
     .wrap{
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 22px auto;
       padding: 0 16px 24px;
       display:grid;
-      grid-template-columns: 1fr 280px;
+      grid-template-columns: 1fr 240px;
       gap: 16px;
       align-items:start;
     }
@@ -140,7 +140,7 @@
     }
 
     #chart{
-      height: 620px;
+      height: 700px;
       width: 100%;
     }
 
@@ -588,8 +588,8 @@
           }
         },
         calendar: {
-          top: 30,
-          left: 20,
+          top: 72,
+          left: 56,
           right: 20,
           cellSize: ["auto", 20],
           range: "2026",
@@ -608,7 +608,7 @@
             nameMap: ["So","Mo","Di","Mi","Do","Fr","Sa"],
             color: "rgba(255,255,255,.78)",
             fontSize: 11,
-            margin: 8
+            margin: 16
           },
           monthLabel: {
             nameMap: MONTHS_DE_SHORT,
@@ -627,7 +627,7 @@
         visualMap: {
           type: "piecewise",
           orient: "horizontal",
-          left: 20,
+          left: 56,
           top: 0,
           itemWidth: 18,
           itemHeight: 10,
