@@ -279,64 +279,64 @@
     .modal-backdrop{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.55);
+      /* popover mode: keep click-catcher, no big dim */
+      background: transparent;
       display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 16px;
       z-index: 50;
     }
-
-    @media (prefers-color-scheme: light){
-      .modal-backdrop{ background: rgba(10,15,25,.25); }
-    }
     .modal{
-      width: min(520px, 100%);
-      border-radius: 16px;
+      position: absolute;
+      width: 240px;
+      border-radius: 14px;
       border: 1px solid var(--border);
       background: linear-gradient(180deg, rgba(24,32,52,.98), rgba(13,17,27,.98));
-      box-shadow: 0 20px 80px rgba(0,0,0,.55);
-      padding: 14px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.45);
+      padding: 10px;
+      z-index: 51;
     }
-
     @media (prefers-color-scheme: light){
       .modal{
         background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,255,.98));
-        box-shadow: 0 20px 80px rgba(22,34,66,.20);
+        box-shadow: 0 16px 48px rgba(22,34,66,.18);
       }
     }
     .modal h3{
-      margin:0 0 6px;
-      font-size: 14px;
+      margin:0 0 4px;
+      font-size: 12px;
       font-weight: 900;
     }
     .modal p{
-      margin:0 0 12px;
+      margin:0 0 8px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
     }
     .modal .opts{
       display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .modal .opts:focus-visible,
+    .modal:focus-visible{
+      outline: 2px solid rgba(255,255,255,.35);
+      outline-offset: 2px;
     }
     .optbtn{
       text-align:left;
-      padding: 10px;
-      border-radius: 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
       background: rgba(255,255,255,.08);
     }
 
     @media (prefers-color-scheme: light){
       .optbtn{ background: rgba(16,24,40,.06); }
     }
-    .optbtn strong{ display:block; font-size: 13px; }
-    .optbtn span{ color: var(--muted); font-size: 12px; }
+    .optbtn strong{ display:block; font-size: 12px; }
+    .optbtn span{ color: var(--muted); font-size: 11px; }
     .modal .foot{
       display:flex;
       justify-content:flex-end;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     @media (max-width: 980px){
@@ -630,6 +630,7 @@
     // Modal for exclusive foreground selection
     // -----------------------
     const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalEl = modalBackdrop.querySelector(".modal");
     const modalTitle = document.getElementById("modalTitle");
     const modalOpts = document.getElementById("modalOpts");
     const modalCancel = document.getElementById("modalCancel");
@@ -644,9 +645,49 @@
       { key: "G", label: "Gleittag", sub: "(G)", letter: "G" }
     ];
 
-    function openModal(iso){
+    function getClientXY(e){
+      const raw = e?.event ?? e;
+      if (raw && typeof raw.clientX === "number" && typeof raw.clientY === "number") {
+        return { x: raw.clientX, y: raw.clientY };
+      }
+      const ox = e?.offsetX ?? e?.zrX;
+      const oy = e?.offsetY ?? e?.zrY;
+      if (typeof ox === "number" && typeof oy === "number"){
+        const rect = document.getElementById("chart").getBoundingClientRect();
+        return { x: rect.left + ox, y: rect.top + oy };
+      }
+      return null;
+    }
+
+    function positionModalNear(x, y){
+      const pad = 8;
+      const dx = 12;
+      const dy = 12;
+
+      modalEl.style.left = `${Math.round(x + dx)}px`;
+      modalEl.style.top = `${Math.round(y + dy)}px`;
+
+      // clamp into viewport after layout
+      requestAnimationFrame(() => {
+        const r = modalEl.getBoundingClientRect();
+        let left = r.left;
+        let top = r.top;
+        const maxL = window.innerWidth - pad - r.width;
+        const maxT = window.innerHeight - pad - r.height;
+
+        if (left > maxL) left = maxL;
+        if (top > maxT) top = maxT;
+        if (left < pad) left = pad;
+        if (top < pad) top = pad;
+
+        modalEl.style.left = `${Math.round(left)}px`;
+        modalEl.style.top = `${Math.round(top)}px`;
+      });
+    }
+
+    function openModal(iso, e){
       modalDate = iso;
-      modalTitle.textContent = `Auswahl für ${iso}`;
+      modalTitle.textContent = iso;
       modalOpts.innerHTML = "";
 
       const current = state.fg[iso] ?? null;
@@ -668,7 +709,16 @@
         modalOpts.appendChild(btn);
       }
 
-      modalBackdrop.style.display = "flex";
+      modalBackdrop.style.display = "block";
+
+      const xy = getClientXY(e);
+      if (xy) positionModalNear(xy.x, xy.y);
+      else positionModalNear(window.innerWidth / 2, window.innerHeight / 3);
+
+      // focus first option for fast keyboard selection
+      requestAnimationFrame(() => {
+        modalOpts.querySelector("button")?.focus();
+      });
     }
 
     function closeModal(){
@@ -681,7 +731,7 @@
       if (e.target === modalBackdrop) closeModal();
     });
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modalBackdrop.style.display === "flex") closeModal();
+      if (e.key === "Escape" && modalBackdrop.style.display !== "none") closeModal();
     });
 
     // -----------------------
@@ -835,7 +885,7 @@
     // Click on day: open modal for fg selection
     chart.on("click", (params) => {
       const iso = Array.isArray(params.value) ? params.value[0] : params.value;
-      if (typeof iso === "string" && in2026(iso)) openModal(iso);
+      if (typeof iso === "string" && in2026(iso)) openModal(iso, params.event);
     });
 
     window.addEventListener("resize", () => chart.resize());
@@ -846,7 +896,7 @@
       chart = echarts.init(document.getElementById("chart"), isDark() ? "dark" : null);
       chart.on("click", (params) => {
         const iso = Array.isArray(params.value) ? params.value[0] : params.value;
-        if (typeof iso === "string" && in2026(iso)) openModal(iso);
+        if (typeof iso === "string" && in2026(iso)) openModal(iso, params.event);
       });
       refresh();
     });
