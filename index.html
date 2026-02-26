@@ -468,6 +468,7 @@
     // State (persisted)
     // -----------------------
     const LS_KEY = "echarts-calendar-2026-state-v1";
+    const SCHOOL_SEED_KEY = `${LS_KEY}-seed-school-bavaria-2026`;
 
     const DEFAULT_STATE = {
       // foreground exclusive selection per date: "U"|"F"|"H"|"G"|null
@@ -505,6 +506,42 @@
     }
 
     const state = loadState();
+
+    // Prefill school holidays (Bavaria) once, if empty.
+    // Source: https://www.schulferien.org/deutschland/ferien/bayern/
+    const BAVARIA_SCHOOL_HOLIDAYS_2026_RANGES = [
+      // Weihnachtsferien (from previous year)
+      ["2025-12-22", "2026-01-05"],
+      // Winterferien / Fruhjahrsferien
+      ["2026-02-16", "2026-02-20"],
+      // Osterferien
+      ["2026-03-30", "2026-04-10"],
+      // Pfingstferien
+      ["2026-05-26", "2026-06-05"],
+      // Sommerferien
+      ["2026-08-03", "2026-09-14"],
+      // Herbstferien
+      ["2026-11-02", "2026-11-06"],
+      // Buß- und Bettag (unterrichtsfrei)
+      ["2026-11-18", "2026-11-18"],
+      // Weihnachtsferien (into next year)
+      ["2026-12-24", "2027-01-08"]
+    ];
+
+    function seedSchoolHolidaysBavaria2026IfNeeded(){
+      if ((state.bg.school?.length ?? 0) > 0) return;
+      if (localStorage.getItem(SCHOOL_SEED_KEY) === "1") return;
+
+      const seeded = [];
+      for (const [from, to] of BAVARIA_SCHOOL_HOLIDAYS_2026_RANGES){
+        seeded.push(...datesInRange(from, to));
+      }
+      state.bg.school = uniqSorted(seeded);
+      localStorage.setItem(SCHOOL_SEED_KEY, "1");
+      saveState();
+    }
+
+    seedSchoolHolidaysBavaria2026IfNeeded();
 
     // -----------------------
     // Category codes (for coloring)
