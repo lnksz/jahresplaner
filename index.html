@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>2026 Kalender – ECharts Heatmap</title>
+  <title>Localer Urlaubsplaner</title>
   <style>
     :root{
       --bg:#0b0f14;
@@ -348,7 +348,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1 class="header">2026 Kalender – Auswahl pro Tag (U/F/H/G oder leer)</h1>
+    <h1 class="header">Localer Urlaubsplaner</h1>
 
     <div class="card side-left">
       <h2 style="margin:0 0 10px; font-size:14px; font-weight:800">Hintergrund-Tage</h2>
@@ -419,12 +419,7 @@
         <div class="count"><div class="left"><span class="swatch" style="background:var(--c-h)"></span>HUrlaub (H)</div><div class="pill" id="cnt-H">0</div></div>
         <div class="count"><div class="left"><span class="swatch" style="background:var(--c-g)"></span>Gleittag (G)</div><div class="pill" id="cnt-G">0</div></div>
       </div>
-      <div class="hint">
-        Klick auf einen Tag öffnet die Auswahl. Pro Tag ist genau <b>eine</b> Kategorie möglich (oder „Nix“).
-        Hintergrund-Kategorien sind unabhängig und werden nicht gezählt; eine Vordergrund-Auswahl überdeckt die Hintergrundfarbe.
-        <br><br>
-        Speicherung: automatisch in <code>localStorage</code>.
-      </div>
+      <div class="hint" style="display:none"></div>
       <div style="margin-top:20px; text-align:right;">
         <button id="resetFg" style="color:#ff8888; border-color:rgba(255,100,100,.35)">
           Alle „Gezählten“ löschen
@@ -829,9 +824,8 @@
 
             return [
               `<b>${iso}</b>`,
-              `Vordergrund: ${fgTxt}`,
-              `Hintergrund: ${bg.length ? bg.join(", ") : "—"}`,
-              `<span style="opacity:.8">(Klick zum Ändern)</span>`
+              `Vorn: ${fgTxt}`,
+              `Hinter: ${bg.length ? bg.join(", ") : "—"}`
             ].join("<br/>");
           }
         },
