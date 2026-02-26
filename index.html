@@ -611,6 +611,33 @@
       return Array.from(new Set(arr)).filter(in2026).sort();
     }
 
+    function toConsecutiveRanges(sortedIsos){
+      const out = [];
+      if (!sortedIsos.length) return out;
+
+      let start = sortedIsos[0];
+      let prev = sortedIsos[0];
+
+      for (let i = 1; i < sortedIsos.length; i++){
+        const cur = sortedIsos[i];
+        const next = new Date(prev + "T00:00:00");
+        next.setDate(next.getDate() + 1);
+        const expected = toISO(next);
+
+        if (cur === expected){
+          prev = cur;
+          continue;
+        }
+
+        out.push({ from: start, to: prev });
+        start = cur;
+        prev = cur;
+      }
+
+      out.push({ from: start, to: prev });
+      return out;
+    }
+
     function renderPicker(pickerEl){
       const key = pickerEl.getAttribute("data-bg");
       const chips = pickerEl.querySelector(".chips");
@@ -618,12 +645,15 @@
 
       state.bg[key] = uniqSorted(state.bg[key]);
 
-      for (const iso of state.bg[key]){
+      const ranges = toConsecutiveRanges(state.bg[key]);
+
+      for (const r of ranges){
+        const label = (r.from === r.to) ? r.from : `${r.from} to ${r.to}`;
         const chip = document.createElement("div");
         chip.className = "chip";
-        chip.innerHTML = `<span>${iso}</span><span class="x" title="Entfernen">×</span>`;
+        chip.innerHTML = `<span>${label}</span><span class="x" title="Entfernen">×</span>`;
         chip.querySelector(".x").addEventListener("click", () => {
-          state.bg[key] = state.bg[key].filter(d => d !== iso);
+          state.bg[key] = state.bg[key].filter(d => d < r.from || d > r.to);
           saveState();
           renderPicker(pickerEl);
           refresh();
