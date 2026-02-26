@@ -226,6 +226,24 @@
       flex-wrap: wrap;
       gap: 6px;
     }
+
+    .fg-ranges{
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .fg-cat{
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .fg-cat .head{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      margin: 0;
+    }
     .chip{
       display:inline-flex;
       align-items:center;
@@ -437,6 +455,8 @@
         </select>
         <button id="fgAdd">Hinzufügen</button>
       </div>
+
+      <div id="fgRanges" class="fg-ranges"></div>
     </div>
 
     <div class="card side">
@@ -638,6 +658,10 @@
       return out;
     }
 
+    function rangeLabel(r){
+      return (r.from === r.to) ? r.from : `${r.from} to ${r.to}`;
+    }
+
     function renderPicker(pickerEl){
       const key = pickerEl.getAttribute("data-bg");
       const chips = pickerEl.querySelector(".chips");
@@ -648,7 +672,7 @@
       const ranges = toConsecutiveRanges(state.bg[key]);
 
       for (const r of ranges){
-        const label = (r.from === r.to) ? r.from : `${r.from} to ${r.to}`;
+        const label = rangeLabel(r);
         const chip = document.createElement("div");
         chip.className = "chip";
         chip.innerHTML = `<span>${label}</span><span class="x" title="Entfernen">×</span>`;
@@ -659,6 +683,61 @@
           refresh();
         });
         chips.appendChild(chip);
+      }
+    }
+
+    function renderForegroundRanges(){
+      const host = document.getElementById("fgRanges");
+      if (!host) return;
+
+      host.innerHTML = "";
+
+      const byType = { U: [], F: [], H: [], G: [] };
+      for (const [iso, v] of Object.entries(state.fg)){
+        if (!in2026(iso)) continue;
+        if (byType[v]) byType[v].push(iso);
+      }
+
+      const types = [
+        { key: "U", label: "Urlaub", colorVar: "--c-u" },
+        { key: "F", label: "FUrlaub", colorVar: "--c-f" },
+        { key: "H", label: "HUrlaub", colorVar: "--c-h" },
+        { key: "G", label: "Gleittag", colorVar: "--c-g" }
+      ];
+
+      for (const t of types){
+        const dates = uniqSorted(byType[t.key]);
+        if (!dates.length) continue;
+
+        const ranges = toConsecutiveRanges(dates);
+        const cat = document.createElement("div");
+        cat.className = "fg-cat";
+
+        const head = document.createElement("div");
+        head.className = "head";
+        head.innerHTML = `<span class="swatch" style="background:var(${t.colorVar})"></span>${t.label}`;
+
+        const chips = document.createElement("div");
+        chips.className = "chips";
+        chips.style.marginTop = "8px";
+
+        for (const r of ranges){
+          const chip = document.createElement("div");
+          chip.className = "chip";
+          chip.innerHTML = `<span>${rangeLabel(r)}</span><span class="x" title="Entfernen">×</span>`;
+          chip.querySelector(".x").addEventListener("click", () => {
+            for (const iso of datesInRange(r.from, r.to)){
+              if (state.fg[iso] === t.key) delete state.fg[iso];
+            }
+            saveState();
+            refresh();
+          });
+          chips.appendChild(chip);
+        }
+
+        cat.appendChild(head);
+        cat.appendChild(chips);
+        host.appendChild(cat);
       }
     }
 
@@ -985,6 +1064,7 @@
 
     function refresh(){
       updateCounts();
+      renderForegroundRanges();
       chart.setOption(option(), true);
     }
 
