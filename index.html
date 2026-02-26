@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Localer Urlaubsplaner</title>
+  <title>Lokaler Urlaubsplaner</title>
   <style>
     :root{
-      --bg:#0b0f14;
+      --bg:#101924;
       --panel:#121826;
       --panel2:#0f1522;
       --text:#e8eef7;
@@ -52,7 +52,7 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-      background: radial-gradient(ellipse at 20% 0%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
+      background: radial-gradient(ellipse at 50% 50%, #18223a 0%, var(--bg) 55%, #070a0f 100%);
       background-attachment: fixed;
       min-height: 100vh;
       color:var(--text);
@@ -60,7 +60,7 @@
 
     @media (prefers-color-scheme: light){
       body{
-        background: radial-gradient(ellipse at 20% 0%, #e9efff 0%, var(--bg) 55%, #e6ebf5 100%);
+        background: radial-gradient(ellipse at 50% 5  0%, #cfb989 0%, var(--bg) 55%, #f8efd4 100%);
         background-attachment: fixed;
       }
     }
@@ -96,7 +96,7 @@
     }
 
     h1{
-      margin:0 0 10px;
+      margin: 10px 0;
       font-size: 18px;
       font-weight: 700;
       letter-spacing: .2px;
@@ -249,7 +249,7 @@
     }
 
     #chart{
-      height: 320px;
+      height: 240px;
       width: 100%;
     }
 
@@ -932,7 +932,8 @@
             position: "top",
             fontSize: 18,
             fontWeight: 900,
-            margin: 40
+            margin: 40,
+            color: "#000"
           }
         },
         visualMap: {
