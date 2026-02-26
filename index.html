@@ -716,6 +716,19 @@
       });
     }
 
+    function bindIconOnlyDateInputs(){
+      // When the native indicator is hidden/styled, some browsers stop opening the picker on click.
+      // showPicker() is the most reliable way (where supported).
+      document.querySelectorAll('input[type="date"]').forEach(el => {
+        el.addEventListener("pointerdown", (e) => {
+          if (typeof el.showPicker !== "function") return;
+          // If supported, force-open the picker (and prevent the default click handling).
+          e.preventDefault();
+          try{ el.showPicker(); }catch{}
+        });
+      });
+    }
+
     // -----------------------
     // Modal for exclusive foreground selection
     // -----------------------
@@ -997,6 +1010,7 @@
     // Boot
     // -----------------------
     bindPickers();
+    bindIconOnlyDateInputs();
 
     document.getElementById("resetFg").addEventListener("click", () => {
       if (confirm("Wirklich alle gezählten Tage (U/F/H/G) löschen?")){
