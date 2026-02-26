@@ -156,6 +156,14 @@
       overflow: hidden;
       cursor: pointer;
     }
+    /* icon-only date pickers (Firefox keeps the value visible otherwise) */
+    input[type="date"]{
+      caret-color: transparent;
+    }
+    #fgFrom,
+    #fgTo{
+      color: transparent;
+    }
     input[type="date"]::-webkit-datetime-edit{
       display: none;
     }
@@ -397,10 +405,9 @@
     <div class="card">
       <div id="chart"></div>
       <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap">
-        <label style="font-size:12px">Von</label>
-        <input type="date" id="fgFrom" min="2026-01-01" max="2026-12-31" style="width:auto; flex:0 0 auto;" />
-        <label style="font-size:12px">Bis</label>
-        <input type="date" id="fgTo" min="2026-01-01" max="2026-12-31" style="width:auto; flex:0 0 auto;" />
+        <input type="date" id="fgFrom" min="2026-01-01" max="2026-12-31" aria-label="Von" title="Von" />
+        <span style="opacity:.7; font-size:12px; user-select:none">-></span>
+        <input type="date" id="fgTo" min="2026-01-01" max="2026-12-31" aria-label="Bis" title="Bis" />
         <select id="fgType" style="background:rgba(255,255,255,.06); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:7px 10px; cursor:pointer;">
           <option value="U">Urlaub (U)</option>
           <option value="F">FUrlaub (F)</option>
