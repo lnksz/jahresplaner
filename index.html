@@ -96,7 +96,7 @@
     }
 
     h1{
-      margin: 10px 0;
+      margin: 4px 0;
       font-size: 18px;
       font-weight: 700;
       letter-spacing: .2px;
@@ -512,6 +512,7 @@
     // -----------------------
     const LS_KEY = "echarts-calendar-2026-state-v1";
     const SCHOOL_SEED_KEY = `${LS_KEY}-seed-school-bavaria-2026`;
+    const HOLIDAY_SEED_KEY = `${LS_KEY}-seed-holiday-bavaria-2026`;
 
     const DEFAULT_STATE = {
       // foreground exclusive selection per date: "U"|"F"|"H"|"G"|null
@@ -550,6 +551,24 @@
 
     const state = loadState();
 
+    // Prefill holidays (Bavaria) once, if empty.
+    // Movable feasts are hardcoded for 2026.
+    const BAVARIA_HOLIDAYS_2026 = [
+      "2026-01-01", // Neujahr
+      "2026-01-06", // Heilige Drei Konige
+      "2026-04-03", // Karfreitag
+      "2026-04-06", // Ostermontag
+      "2026-05-01", // Tag der Arbeit
+      "2026-05-14", // Christi Himmelfahrt
+      "2026-05-25", // Pfingstmontag
+      "2026-06-04", // Fronleichnam
+      "2026-08-15", // Maria Himmelfahrt (regional in Bayern)
+      "2026-10-03", // Tag der Deutschen Einheit
+      "2026-11-01", // Allerheiligen
+      "2026-12-25", // 1. Weihnachtstag
+      "2026-12-26"  // 2. Weihnachtstag
+    ];
+
     // Prefill school holidays (Bavaria) once, if empty.
     // Source: https://www.schulferien.org/deutschland/ferien/bayern/
     const BAVARIA_SCHOOL_HOLIDAYS_2026_RANGES = [
@@ -584,6 +603,16 @@
       saveState();
     }
 
+    function seedHolidaysBavaria2026IfNeeded(){
+      if ((state.bg.holiday?.length ?? 0) > 0) return;
+      if (localStorage.getItem(HOLIDAY_SEED_KEY) === "1") return;
+
+      state.bg.holiday = uniqSorted(BAVARIA_HOLIDAYS_2026);
+      localStorage.setItem(HOLIDAY_SEED_KEY, "1");
+      saveState();
+    }
+
+    seedHolidaysBavaria2026IfNeeded();
     seedSchoolHolidaysBavaria2026IfNeeded();
 
     // -----------------------
