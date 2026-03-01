@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lokaler Urlaubsplaner</title>
+  <title>2026 - Lokaler Urlaubsplaner</title>
   <style>
     :root{
       --bg:#101924;
@@ -394,7 +394,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1 class="header">Localer Urlaubsplaner</h1>
+    <h1 class="header">2026 - Lokaler Urlaubsplaner</h1>
 
     <div class="card side-left">
       <h2 style="margin:0 0 10px; font-size:14px; font-weight:800">Hintergrund-Tage</h2>
@@ -474,6 +474,16 @@
         </button>
       </div>
     </div>
+
+    <div class="card side">
+      <h2>Export/Import</h2>
+      <div class="row" style="gap:10px; flex-wrap:wrap">
+        <button id="exportStorage">Export</button>
+        <button id="importStorage">Import</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+      </div>
+      <div class="hint">Speichert oder laedt den kompletten LocalStorage als JSON.</div>
+    </div>
   </div>
 
   <!-- Modal -->
@@ -547,6 +557,44 @@
 
     function saveState(){
       localStorage.setItem(LS_KEY, JSON.stringify(state));
+    }
+
+    function exportLocalStorage(){
+      const payload = {};
+      for (let i = 0; i < localStorage.length; i++){
+        const key = localStorage.key(i);
+        if (key === null) continue;
+        payload[key] = localStorage.getItem(key);
+      }
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lokaler-urlaubsplaner-localstorage.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importLocalStorageFromFile(file){
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const parsed = JSON.parse(String(reader.result || ""));
+          if (!parsed || typeof parsed !== "object") throw new Error("invalid");
+          localStorage.clear();
+          for (const [key, value] of Object.entries(parsed)){
+            if (typeof key !== "string") continue;
+            localStorage.setItem(key, value === null ? "" : String(value));
+          }
+          window.location.reload();
+        }catch{
+          alert("Import fehlgeschlagen: Ungueltige JSON-Datei.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     const state = loadState();
@@ -1041,7 +1089,7 @@
             margin: 10
           },
           yearLabel: {
-            show: true,
+            show: false,
             position: "top",
             fontSize: 18,
             fontWeight: 900,
@@ -1133,6 +1181,15 @@
         saveState();
         refresh();
       }
+    });
+
+    const importFileEl = document.getElementById("importFile");
+    document.getElementById("exportStorage").addEventListener("click", exportLocalStorage);
+    document.getElementById("importStorage").addEventListener("click", () => importFileEl.click());
+    importFileEl.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      importLocalStorageFromFile(file);
+      e.target.value = "";
     });
 
     // Foreground range input
